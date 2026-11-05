@@ -1,0 +1,2 @@
+./rv64-emu -X testdata/decode-example1.txt
+0x41fb8633	sub x12, x23, x31

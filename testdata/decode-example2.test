@@ -1,0 +1,6 @@
+./rv64-emu -X testdata/decode-example2.txt
+0x02600093	addi x1, x0, 38
+0x00408113	addi x2, x1, 4
+0xf0b08193	addi x3, x1, -245
+0x40110233	sub x4, x2, x1
+0x004082b3	add x5, x1, x4

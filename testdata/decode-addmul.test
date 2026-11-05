@@ -1,0 +1,8 @@
+./rv64-emu -X testdata/decode-addmul.txt
+0x00000293	addi x5, x0, 0
+0x00c0006f	jal x0, 12
+0x00a282b3	add x5, x5, x10
+0xfff58593	addi x11, x11, -1
+0xfeb04ce3	blt x0, x11, -8
+0x00028513	addi x10, x5, 0
+0x00008067	jalr x0, 0(x1)

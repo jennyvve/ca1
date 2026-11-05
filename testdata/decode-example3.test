@@ -1,0 +1,5 @@
+./rv64-emu -X testdata/decode-example3.txt
+0x00813083	ld x1, 8(x2)
+0x02813903	ld x18, 40(x2)
+0x01713023	sd x23, 0(x2)
+0x710fa683	lw x13, 1808(x31)
