@@ -135,7 +135,6 @@ void MemoryStage::mem_handler_load(void) {
     data_memory.setAddress(ex_m.alu_output);
     data_memory.setReadEnable(true);
     lmd = data_memory.getDataOut(map_mem_sign_ext[ex_m.ir.funct3]);
-    std::cout << lmd << std::endl;
 }
 
 void MemoryStage::mem_handler_store(void) {
@@ -179,10 +178,10 @@ void WriteBackStage::wb_handler_op(void) {
 
 void WriteBackStage::wb_handler_load(void) {
     regfile.setRD(m_wb.ir.rd);
-    regfile.setWriteEnable(true);
     regfile.setWriteData(m_wb.lmd);
-    regfile.setWriteEnable(false);
+    regfile.setWriteEnable(true);
     regfile.clock_pulse();
+    regfile.setWriteEnable(false);
 }
 
 void WriteBackStage::propagate() {

@@ -7,8 +7,7 @@
 
 #include "memory-control.h"
 
-InstructionMemory::InstructionMemory(MemoryBus &bus)
-    : bus(bus), size(0), addr(0) {}
+InstructionMemory::InstructionMemory(MemoryBus &bus) : bus(bus), size(0), addr(0) {}
 
 void InstructionMemory::setSize(const uint8_t size) {
     if (size != 2 && size != 4) {
@@ -18,9 +17,7 @@ void InstructionMemory::setSize(const uint8_t size) {
     this->size = size;
 }
 
-void InstructionMemory::setAddress(const MemAddress addr) {
-    this->addr = addr;
-}
+void InstructionMemory::setAddress(const MemAddress addr) { this->addr = addr; }
 
 RegValue InstructionMemory::getValue() const {
     switch (size) {
@@ -29,33 +26,26 @@ RegValue InstructionMemory::getValue() const {
         case 4:
             return bus.readWord(addr);
         default:
-            throw IllegalAccess("Invalid size " +
-                                std::to_string(size));
+            throw IllegalAccess("Invalid size " + std::to_string(size));
     }
 }
 
 DataMemory::DataMemory(MemoryBus &bus) : bus{bus} {}
 
 void DataMemory::setSize(const uint8_t size) {
-    if (size != 4 || size != 8) {
+    if (!(size == 2 || size == 1 || size == 4 || size == 8)) {
         throw IllegalAccess("Invalid size " + std::to_string(size));
     }
     this->size = size;
 }
 
-void DataMemory::setAddress(const MemAddress addr) {
-    this->addr = addr;
-}
+void DataMemory::setAddress(const MemAddress addr) { this->addr = addr; }
 
-void DataMemory::setDataIn(const RegValue value) {
-    this->dataIn = value;
-}
+void DataMemory::setDataIn(const RegValue value) { this->dataIn = value; }
 
 void DataMemory::setReadEnable(bool setting) { readEnable = setting; }
 
-void DataMemory::setWriteEnable(bool setting) {
-    writeEnable = setting;
-}
+void DataMemory::setWriteEnable(bool setting) { writeEnable = setting; }
 
 RegValue DataMemory::getValue() const {
     switch (size) {
@@ -68,8 +58,7 @@ RegValue DataMemory::getValue() const {
         case 8:
             return bus.readDoubleWord(addr);
         default:
-            throw IllegalAccess("Invalid size " +
-                                std::to_string(size));
+            throw IllegalAccess("Invalid size " + std::to_string(size));
     }
 }
 
@@ -105,7 +94,6 @@ void DataMemory::clock_pulse() const {
         case 8:
             bus.writeDoubleWord(addr, dataIn);
         default:
-            throw IllegalAccess("Invalid size " +
-                                std::to_string(size));
+            throw IllegalAccess("Invalid size " + std::to_string(size));
     }
 }

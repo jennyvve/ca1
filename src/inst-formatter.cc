@@ -118,32 +118,7 @@ std::ostream &operator<<(std::ostream &os, const InstructionDecoder &decoder) {
             instr_str = map_instr_str_uj_type[instr.opcode];
             os << instr_str << " " << conv_reg_str(instr.rd) << ", " << instr.imm;
             break;
-        case INSTRUCTION_TYPE_CI:
-            os << instr_str << " " << conv_reg_str(instr.rd) << ", " << instr.imm;
-            break;
-        case INSTRUCTION_TYPE_CR:
-            os << instr_str << " " << conv_reg_str(instr.rd) << ", " << conv_reg_str(instr.rs2);
-            break;
-        case INSTRUCTION_TYPE_CSS:
-            os << instr_str << " " << conv_reg_str(instr.rs2) << ", " << instr.imm << "(sp)";
-            break;
-        case INSTRUCTION_TYPE_CIW:
-            os << instr_str << " " << conv_reg_str(instr.rd) << ", " << instr.imm << "(sp)";
-            break;
-        case INSTRUCTION_TYPE_CL:
-            os << instr_str << " " << conv_reg_str(instr.rd) << ", " << instr.imm << "(" << conv_reg_str(instr.rs1)
-               << ")";
-            break;
-        case INSTRUCTION_TYPE_CS:
-            os << instr_str << " " << conv_reg_str(instr.rs2) << ", " << instr.imm << "(" << conv_reg_str(instr.rs1)
-               << ")";
-            break;
-        case INSTRUCTION_TYPE_CB:
-            os << instr_str << " " << conv_reg_str(instr.rs1) << ", " << instr.imm;
-            break;
-        case INSTRUCTION_TYPE_CJ:
-            os << instr_str << " " << instr.imm;
-            break;
+
         default:
             throw IllegalInstruction("Unknown instruction type");
     }
