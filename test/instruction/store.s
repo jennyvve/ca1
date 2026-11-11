@@ -18,6 +18,13 @@
 	.type	_start, @function
 _start:
 	add	sp,sp,-32
-	sd	s0,24(sp)
+	sd	x1,24(sp)
+	ld	x3,24(sp)
+	sw	x1,24(sp)
+	lw	x4,24(sp)
+	sh	x1,24(sp)
+	lh	x5,24(sp)
+	sb	x1,24(sp)
+	lb	x6,24(sp)
 	.word	0xddffccff
 	.size	_start, .-_start

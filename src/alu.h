@@ -19,14 +19,23 @@ enum class ALUOP {
     SUB,
     SLL,
     SLT,
-    SLT_32,
     SLTU,
     XOR,
     SRL,
     SRA,
-    SRA_32,
     OR,
-    AND
+    AND,
+    BEQ,
+    BNE,
+    BLT,
+    BGE,
+    BLTU,
+    BGEU,
+    ADD_32,
+    SUB_32,
+    SLL_32,
+    SRL_32,
+    SRA_32,
 };
 
 /* The ALU component performs the specified operation on operands A

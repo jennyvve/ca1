@@ -14,11 +14,15 @@ from pathlib import Path
 import subprocess
 
 from argparse import ArgumentParser
+from argparse import FileType
+
 try:
     from colorama import init, Fore, Style
+
     enable_color = True
 except ImportError:
     enable_color = False
+
 
 # Returns posix on POSIX platform, nt on NT/Windows
 def posix_nt(posix, nt):
@@ -31,10 +35,12 @@ def bright(s):
         s = Style.BRIGHT + s + Style.RESET_ALL
     return s
 
+
 def passed(s):
     if enable_color:
         s = Fore.GREEN + s + Style.RESET_ALL
     return s
+
 
 def failed(s):
     if enable_color:
@@ -48,32 +54,35 @@ if enable_color:
 # Need emulator available
 RV64_EMU = Path(posix_nt("rv64-emu", "Windows\\rv64-emu.exe"))
 if not RV64_EMU.exists():
-    print("rv64-emu{} executable not available, compile it first.".format(posix_nt('', '.exe')), file=sys.stderr)
+    print(
+        "rv64-emu{} executable not available, compile it first.".format(
+            posix_nt("", ".exe")
+        ),
+        file=sys.stderr,
+    )
     exit(1)
 RV64_EMU = RV64_EMU.resolve()
 
 # Parse arguments
 parser = ArgumentParser()
-parser.add_argument("-v", dest="verbose", action="store_true",
-                    help="Enable verbose output")
-parser.add_argument("-f", dest="fail", action="store_true",
-                    help="Stop on first failure")
-parser.add_argument("-p", dest="pipeline", action="store_true",
-                    help="Enable pipelining on emulator")
-parser.add_argument("testfile", type=str, nargs="?",
-                    help="Optional path to single test (.conf file) to run")
+parser.add_argument(
+    "-v", dest="verbose", action="store_true", help="Enable verbose output"
+)
+parser.add_argument(
+    "-f", dest="fail", action="store_true", help="Stop on first failure"
+)
+parser.add_argument(
+    "-p", dest="pipeline", action="store_true", help="Enable pipelining on emulator"
+)
+parser.add_argument(
+    "testfiles",
+    type=str,
+    nargs="+",
+    help="Optional path to single test (.conf file) to run",
+)
 args = parser.parse_args()
 
-# Determine which unit tests to run
-if args.testfile:
-    if not Path(args.testfile).exists():
-        print("Test {} does not exist".format(args.testfile), file=sys.stderr)
-        exit(1)
-
-    all_tests = [args.testfile]
-else:
-    all_tests = list(Path("./tests").glob("*.conf"))
-    all_tests.sort()
+all_tests = args.testfiles
 
 # Initialize stats
 collected = len(all_tests)
@@ -86,27 +95,28 @@ print()
 
 # Run the tests
 if args.pipeline:
-    cmd = [str(RV64_EMU), '-p', '-t']
+    cmd = [str(RV64_EMU), "-p", "-t"]
 else:
-    cmd = [str(RV64_EMU), '-t']
+    cmd = [str(RV64_EMU), "-t"]
 
 for test in all_tests:
     try:
-        result = subprocess.run(cmd + [str(test)], stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, timeout=3)
+        result = subprocess.run(
+            cmd + [str(test)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=3
+        )
     except subprocess.TimeoutExpired:
         result = None
 
     if result and result.returncode == 0:
         tests_pass += 1
         if not args.verbose:
-            print(passed("."), end='')
+            print(passed("."), end="")
         else:
             print(passed("PASS"), test)
     else:
         tests_fail += 1
         if not args.verbose:
-            print(failed("F"), end='')
+            print(failed("F"), end="")
             fail_log += failed("FAIL ") + str(test) + "\n"
             if result:
                 fail_log += result.stderr.decode() + "\n"

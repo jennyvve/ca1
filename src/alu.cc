@@ -17,31 +17,31 @@
 ALU::ALU() : A(), B(), op() {}
 
 RegValue ALU::getResult() {
-    const uint32_t shift_mask = (sizeof(RegValue) == 8) ? 0x3F : 0x1F;
-
+    int64_t signed_a = static_cast<int64_t>(A);
+    int64_t signed_b = static_cast<int64_t>(B);
     switch (op) {
         case ALUOP::ADD:
-            return A + B;
+            return static_cast<RegValue>(signed_a + signed_b);
         case ALUOP::SUB:
-            return A - B;
-        case ALUOP::SLL:
-            return A << (B & shift_mask);
-        case ALUOP::SRL:
-            return A >> (B & shift_mask);
-        case ALUOP::SRA: {
-            int64_t signed_a = static_cast<int64_t>(A);
-            return static_cast<RegValue>(signed_a >>
-                                         (B & shift_mask));
+            return static_cast<RegValue>(signed_a - signed_b);
+        case ALUOP::SLL: {
+            unsigned shamt = static_cast<unsigned>(B & 0x3f);
+            return A << shamt;
         }
-        case ALUOP::SRA_32: {
-            int32_t signed_a = static_cast<int32_t>(A);
-            return static_cast<RegValue>(signed_a >>
-                                         (B & shift_mask));
+        case ALUOP::SRL: {
+            unsigned shamt = static_cast<unsigned>(B & 0x3f);
+            return A >> shamt;
+        }
+        case ALUOP::SRA: {
+            unsigned shamt = static_cast<unsigned>(B & 0x3f);
+            RegValue result = A >> shamt;
+            if (shamt != 0 && (A & (RegValue{1} << 63))) {
+                result |= (~RegValue{0}) << (64 - shamt);
+            }
+            return result;
         }
         case ALUOP::SLT:
-            return static_cast<int64_t>(A) < static_cast<int64_t>(B);
-        case ALUOP::SLT_32:
-            return static_cast<int32_t>(A) < static_cast<int32_t>(B);
+            return signed_a < signed_b;
         case ALUOP::SLTU:
             return A < B;
         case ALUOP::XOR:
@@ -50,8 +50,46 @@ RegValue ALU::getResult() {
             return A | B;
         case ALUOP::AND:
             return A & B;
+        case ALUOP::BEQ:
+            return signed_a == signed_b;
+        case ALUOP::BNE:
+            return signed_a != signed_b;
+        case ALUOP::BLT:
+            return signed_a < signed_b;
+        case ALUOP::BGE:
+            return signed_a > signed_b;
+        case ALUOP::BLTU:
+            return A < B;
+        case ALUOP::BGEU:
+            return A > B;
+        case ALUOP::ADD_32:
+            return static_cast<int32_t>(A) + static_cast<int32_t>(B);
+        case ALUOP::SUB_32:
+            return static_cast<int32_t>(A) - static_cast<int32_t>(B);
+        case ALUOP::SLL_32: {
+            const uint32_t value = static_cast<uint32_t>(A);
+            const unsigned shamt = static_cast<unsigned>(B & 0x1f);
+            return static_cast<RegValue>(value << shamt);
+        }
+        case ALUOP::SRL_32: {
+            const uint32_t value = static_cast<uint32_t>(A);
+            const unsigned shamt = static_cast<unsigned>(B & 0x1f);
+            return static_cast<RegValue>(value >> shamt);
+        }
+        case ALUOP::SRA_32: {
+            const uint32_t value = static_cast<uint32_t>(A);
+            const unsigned shamt = static_cast<unsigned>(B & 0x1f);
+            uint32_t result = value >> shamt;
+            if (shamt != 0 && (value & 0x80000000u)) {
+                result |= (~uint32_t{0}) << (32 - shamt);
+            }
+            RegValue extended = result;
+            if (result & 0x80000000u) {
+                extended |= 0xffffffff00000000ULL;
+            }
+            return extended;
+        }
         default:
-            throw IllegalInstruction(
-                "Unimplemented or unknown ALU operation");
+            throw IllegalInstruction("Unimplemented or unknown ALU operation");
     }
 }

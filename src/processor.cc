@@ -10,26 +10,19 @@
 #include <iomanip>
 #include <iostream>
 
-#include "framebuffer.h"
 #include "inst-decoder.h"
 #include "serial.h"
 
-Processor::Processor(ELFFile &program, bool pipelining,
-                     bool debug_mode)
+Processor::Processor(ELFFile &program, bool pipelining, bool debug_mode)
     : bus{program.createMemories()},
       instr_mem{bus},
       data_memory{bus},
-      pipeline{pipelining, debug_mode, prog_counter, instr_mem,
-               decoder,    regfile,    data_memory} {
+      pipeline{pipelining, debug_mode, prog_counter, instr_mem, decoder, regfile, data_memory} {
     bus.addClient(std::make_unique<Serial>(0x200));
 
     auto status = std::make_unique<SysStatus>(0x270);
     sysStatus = status.get();
     bus.addClient(std::move(status));
-
-#ifdef ENABLE_FRAMEBUFFER
-    bus.addClient(std::make_unique<Framebuffer>(0x800, 0x1000000));
-#endif
 
     /* Initialize prog_counter */
     prog_counter = program.getEntrypoint();
@@ -38,13 +31,9 @@ Processor::Processor(ELFFile &program, bool pipelining,
 /* This method is used to initialize registers using values
  * passed as command-line argument.
  */
-void Processor::initRegister(RegNumber regnum, RegValue value) {
-    regfile.writeRegister(regnum, value);
-}
+void Processor::initRegister(RegNumber regnum, RegValue value) { regfile.writeRegister(regnum, value); }
 
-RegValue Processor::getRegister(RegNumber regnum) const {
-    return regfile.readRegister(regnum);
-}
+RegValue Processor::getRegister(RegNumber regnum) const { return regfile.readRegister(regnum); }
 
 /* Processor main loop. Each iteration should execute an instruction.
  * One step in executing and instruction takes 1 clock cycle.
@@ -73,25 +62,22 @@ bool Processor::run(bool testMode) {
         } catch (TestEndMarkerEncountered &e) {
             if (testMode) return true;
             /* else */
-            std::cerr
-                << "ABNORMAL PROGRAM TERMINATION; prog_counter = "
-                << std::hex << prog_counter << std::dec << std::endl;
+            std::cerr << "ABNORMAL PROGRAM TERMINATION; prog_counter = " << std::hex << prog_counter << std::dec
+                      << std::endl;
             std::cerr << "Reason: " << e.what() << std::endl;
             return false;
         } catch (InstructionFetchFailure &e) {
             if (testMode) return true;
             /* else */
-            std::cerr
-                << "ABNORMAL PROGRAM TERMINATION; prog_counter = "
-                << std::hex << prog_counter << std::dec << std::endl;
+            std::cerr << "ABNORMAL PROGRAM TERMINATION; prog_counter = " << std::hex << prog_counter << std::dec
+                      << std::endl;
             std::cerr << "Reason: " << e.what() << std::endl;
             return false;
         } catch (std::exception &e) {
             /* Catch exceptions such as IllegalInstruction and
              * InvalidAccess */
-            std::cerr
-                << "ABNORMAL PROGRAM TERMINATION; prog_counter = "
-                << std::hex << prog_counter << std::dec << std::endl;
+            std::cerr << "ABNORMAL PROGRAM TERMINATION; prog_counter = " << std::hex << prog_counter << std::dec
+                      << std::endl;
             std::cerr << "Reason: " << e.what() << std::endl;
             return false;
         }
@@ -106,29 +92,18 @@ void Processor::dumpRegisters() const {
     auto storeFlags(std::cerr.flags());
 
     for (size_t i = 0; i < NumRegs / NumColumns; ++i) {
-        std::cerr << "x" << std::setw(2) << std::setfill('0') << i
-                  << " 0x" << std::setw(valueFieldWidth) << std::hex
-                  << std::noshowbase << regfile.readRegister(i)
-                  << "\t";
+        std::cerr << "x" << std::setw(2) << std::setfill('0') << i << " 0x" << std::setw(valueFieldWidth) << std::hex
+                  << std::noshowbase << regfile.readRegister(i) << "\t";
         std::cerr.setf(storeFlags);
-        std::cerr << "x" << std::setw(2) << (i + NumRegs / NumColumns)
-                  << " 0x" << std::setw(valueFieldWidth) << std::hex
-                  << std::noshowbase
-                  << regfile.readRegister(i + NumRegs / NumColumns)
-                  << std::endl;
+        std::cerr << "x" << std::setw(2) << (i + NumRegs / NumColumns) << " 0x" << std::setw(valueFieldWidth)
+                  << std::hex << std::noshowbase << regfile.readRegister(i + NumRegs / NumColumns) << std::endl;
         std::cerr.setf(storeFlags);
     }
 }
 
 void Processor::dumpStatistics() const {
-    std::cerr << nCycles << " clock cycles, "
-              << pipeline.getInstrIssued() << " instructions issued, "
-              << pipeline.getInstrCompleted()
-              << " instructions completed." << std::endl;
-    if (pipeline.getPipelining())
-        std::cerr << pipeline.getStalls() << " stall cycles inserted."
-                  << std::endl;
-    std::cerr << bus.getBytesRead() << " bytes read, "
-              << bus.getBytesWritten() << " bytes written."
-              << std::endl;
+    std::cerr << nCycles << " clock cycles, " << pipeline.getInstrIssued() << " instructions issued, "
+              << pipeline.getInstrCompleted() << " instructions completed." << std::endl;
+    if (pipeline.getPipelining()) std::cerr << pipeline.getStalls() << " stall cycles inserted." << std::endl;
+    std::cerr << bus.getBytesRead() << " bytes read, " << bus.getBytesWritten() << " bytes written." << std::endl;
 }

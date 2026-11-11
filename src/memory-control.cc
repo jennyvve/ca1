@@ -87,12 +87,16 @@ void DataMemory::clock_pulse() const {
     switch (size) {
         case 1:
             bus.writeByte(addr, dataIn);
+            return;
         case 2:
             bus.writeHalfWord(addr, dataIn);
+            return;
         case 4:
             bus.writeWord(addr, dataIn);
+            return;
         case 8:
             bus.writeDoubleWord(addr, dataIn);
+            return;
         default:
             throw IllegalAccess("Invalid size " + std::to_string(size));
     }

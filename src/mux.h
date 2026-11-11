@@ -57,8 +57,7 @@ class Mux {
 
     void set_selector(S selector) {
         if (selector == S::LAST) {
-            throw std::out_of_range(
-                "Cannot set LAST as mux selector.");
+            throw std::out_of_range("Cannot set LAST as mux selector.");
         }
 
         this->selector = selector;
@@ -66,7 +65,7 @@ class Mux {
 
     S get_selector() const { return selector; }
 
-    V getOutput() const { return values[static_cast<int>(selector)]; }
+    V get_output() const { return values[static_cast<int>(selector)]; }
 
    private:
     S selector;

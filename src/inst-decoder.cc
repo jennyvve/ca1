@@ -56,6 +56,9 @@ void InstructionDecoder::dec_instr() {
         }
         case INSTRUCTION_TYPE_U:
             this->instr_struct.imm = static_cast<int32_t>(raw.type_u.imm << 12);
+            if (instr_struct.imm > (524287 << 12)) {
+                throw IllegalInstruction("U type instruction has a value exceeding 524287.");
+            }
             break;
         case INSTRUCTION_TYPE_J: {
             const uint32_t imm = (((raw.type_j.imm >> 19) & 0x1u) << 20) | ((raw.type_j.imm & 0xFFu) << 12) |
@@ -70,10 +73,10 @@ void InstructionDecoder::dec_instr() {
 
     switch (this->instr_struct.type) {
         case INSTRUCTION_TYPE_R:
+        case INSTRUCTION_TYPE_I:  // todo?
             this->instr_struct.funct3 = (instruction_funct3_e)raw.type_r.funct3;
             this->instr_struct.funct7 = (instruction_funct7_e)raw.type_r.funct7;
             break;
-        case INSTRUCTION_TYPE_I:
         case INSTRUCTION_TYPE_S:
         case INSTRUCTION_TYPE_B:
             this->instr_struct.funct3 = (instruction_funct3_e)raw.type_r.funct3;
@@ -87,7 +90,11 @@ void InstructionDecoder::dec_instr() {
 }
 
 instruction_t InstructionDecoder::set_instr_reg(const uint32_t instr_reg) {
-    this->instr_reg = instr_reg;
+    if (instr_reg == TestEndMarker) {
+        this->instr_reg = instr_nop_raw;
+    } else {
+        this->instr_reg = instr_reg;
+    }
     this->dec_instr();
     return this->instr_struct;
 }
