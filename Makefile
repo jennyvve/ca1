@@ -36,9 +36,12 @@ clean:
 	rm -rf ${TARGET} ${OBJ_DIR}
 
 check: ${TARGET}
-	scripts/test_output.py -C ./test/decoder
-	scripts/test_instructions.py ./test/instruction/*.conf
-	scripts/test_instructions.py -p ./test/instruction/*.conf
-	scripts/test_output.py -C ./test/application
+	./scripts/test_output.py -C ./test/decoder
+	./scripts/test_application.sh ./test/application/testdata/level1.test
+	./scripts/test_application.sh ./test/application/testdata/level2.test
+	./scripts/test_application.sh ./test/application/testdata/level3.test
+	./scripts/test_application.sh ./test/application/testdata/level4.test
+	./scripts/test_instructions.py ./test/instruction/*.conf
+	./scripts/test_instructions.py -p ./test/instruction/*.conf
 
 

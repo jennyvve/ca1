@@ -9,9 +9,6 @@
 
 #include "../stages.h"
 
-const uint8_t N_PIPELINE_STAGES = 5;
-const uint8_t INSTR_SIZE = 4;
-
 void InstructionFetchStage::propagate() {
     mux_pc.set_input(InputSelectorPC::INCREMENT, prog_counter);
     mux_flush.set_input(InputSelectorFlush::YES, true);
@@ -30,7 +27,7 @@ void InstructionFetchStage::propagate() {
             mux_pc.set_input(InputSelectorPC::INCREMENT, prog_counter - INSTR_SIZE);
         }
 
-        if (instr_reg == TestEndMarker && instr_distributed <= 0) {
+        if (instr_reg == TestEndMarker && (!pipelining || instr_distributed <= 0)) {
             throw TestEndMarkerEncountered(prog_counter);
         }
     } catch (TestEndMarkerEncountered &e) {

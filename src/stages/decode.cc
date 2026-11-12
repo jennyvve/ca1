@@ -24,16 +24,16 @@ void InstructionDecodeStage::propagate() {
     regfile.setRS2(instr.rs2);
     imm = instr.imm;
 
-    if (instr.rs1 == reg_rd_prev[REG_RD_MEM]) {
+    if (pipelining && instr.rs1 && instr.rs1 == reg_rd_prev[REG_RD_MEM]) {
         df_a = DATAFORWARD_MEM;
     }
-    if (instr.rs2 == reg_rd_prev[REG_RD_MEM]) {
+    if (pipelining && instr.rs2 && instr.rs2 == reg_rd_prev[REG_RD_MEM]) {
         df_b = DATAFORWARD_MEM;
     }
-    if (instr.rs1 == reg_rd_prev[REG_RD_EX]) {
+    if (pipelining && instr.rs1 && instr.rs1 == reg_rd_prev[REG_RD_EX]) {
         df_a = DATAFORWARD_EX;
     }
-    if (instr.rs2 == reg_rd_prev[REG_RD_EX]) {
+    if (pipelining && instr.rs2 && instr.rs2 == reg_rd_prev[REG_RD_EX]) {
         df_b = DATAFORWARD_EX;
     }
 

@@ -25,9 +25,15 @@ std::map<instruction_opcode_e, instruction_type_e> instruction_type_map_32 = {
     {INSTRUCTION_OPCODE_JALR, INSTRUCTION_TYPE_I},   {INSTRUCTION_OPCODE_JAL, INSTRUCTION_TYPE_J},
 };
 
-int32_t sign_extend(uint32_t value, unsigned width) {
-    uint32_t sign_bit = 1u << (width - 1);
-    return static_cast<int32_t>((value ^ sign_bit) - sign_bit);
+int64_t sign_extend(uint32_t value, unsigned width) {
+    const uint64_t sign_bit = uint64_t{1} << (width - 1);
+    const uint64_t mask = (uint64_t{1} << width) - 1;
+    const uint64_t v = static_cast<uint64_t>(value) & mask;
+
+    if (v & sign_bit) {
+        return static_cast<int64_t>(v) - static_cast<int64_t>(uint64_t{1} << width);
+    }
+    return static_cast<int64_t>(v);
 }
 
 void InstructionDecoder::dec_instr() {
@@ -35,9 +41,41 @@ void InstructionDecoder::dec_instr() {
 
     this->instr_struct.type = instruction_type_map_32[(instruction_opcode_e)raw.type_r.opcode];
     this->instr_struct.opcode = (instruction_opcode_e)raw.type_r.opcode;
-    this->instr_struct.rd = raw.type_r.rd;
-    this->instr_struct.rs1 = raw.type_r.rs1;
-    this->instr_struct.rs2 = raw.type_r.rs2;
+
+    switch (this->instr_struct.type) {
+        case INSTRUCTION_TYPE_R:
+        case INSTRUCTION_TYPE_I:
+        case INSTRUCTION_TYPE_U:
+        case INSTRUCTION_TYPE_J:
+            this->instr_struct.rd = raw.type_r.rd;
+            break;
+        default:
+            this->instr_struct.rd = 0;
+            break;
+    }
+
+    switch (this->instr_struct.type) {
+        case INSTRUCTION_TYPE_R:
+        case INSTRUCTION_TYPE_I:
+        case INSTRUCTION_TYPE_S:
+        case INSTRUCTION_TYPE_B:
+            this->instr_struct.rs1 = raw.type_r.rs1;
+            break;
+        default:
+            this->instr_struct.rs1 = 0;
+            break;
+    }
+
+    switch (this->instr_struct.type) {
+        case INSTRUCTION_TYPE_R:
+        case INSTRUCTION_TYPE_S:
+        case INSTRUCTION_TYPE_B:
+            this->instr_struct.rs2 = raw.type_r.rs2;
+            break;
+        default:
+            this->instr_struct.rs2 = 0;
+            break;
+    }
 
     switch (this->instr_struct.type) {
         case INSTRUCTION_TYPE_I:
@@ -73,10 +111,10 @@ void InstructionDecoder::dec_instr() {
 
     switch (this->instr_struct.type) {
         case INSTRUCTION_TYPE_R:
-        case INSTRUCTION_TYPE_I:  // todo?
             this->instr_struct.funct3 = (instruction_funct3_e)raw.type_r.funct3;
             this->instr_struct.funct7 = (instruction_funct7_e)raw.type_r.funct7;
             break;
+        case INSTRUCTION_TYPE_I:
         case INSTRUCTION_TYPE_S:
         case INSTRUCTION_TYPE_B:
             this->instr_struct.funct3 = (instruction_funct3_e)raw.type_r.funct3;

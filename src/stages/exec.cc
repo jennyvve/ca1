@@ -93,6 +93,9 @@ void ExecuteStage::exec_handler_branch(void) {
 }
 
 void ExecuteStage::exec_handler_lui(void) { alu_output = id_ex_int.imm; }
+void ExecuteStage::exec_handler_auipc(void) { alu_output = id_ex_int.npc + static_cast<int64_t>(id_ex_int.imm); }
+void ExecuteStage::exec_handler_jal(void) { alu_output = id_ex_int.npc + static_cast<int64_t>(id_ex_int.imm); }
+void ExecuteStage::exec_handler_jalr(void) { alu_output = ((id_ex_int.a + static_cast<int64_t>(id_ex_int.imm)) & ~1); }
 
 void ExecuteStage::exec_handler_mem(void) { alu_output = (RegValue)((int64_t)id_ex_int.a + (int64_t)id_ex_int.imm); }
 

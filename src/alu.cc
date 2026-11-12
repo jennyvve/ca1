@@ -57,15 +57,15 @@ RegValue ALU::getResult() {
         case ALUOP::BLT:
             return signed_a < signed_b;
         case ALUOP::BGE:
-            return signed_a > signed_b;
+            return signed_a >= signed_b;
         case ALUOP::BLTU:
             return A < B;
         case ALUOP::BGEU:
-            return A > B;
+            return A >= B;
         case ALUOP::ADD_32:
-            return static_cast<int32_t>(A) + static_cast<int32_t>(B);
+            return static_cast<RegValue>(static_cast<int32_t>(A) + static_cast<int32_t>(B));
         case ALUOP::SUB_32:
-            return static_cast<int32_t>(A) - static_cast<int32_t>(B);
+            return static_cast<RegValue>(static_cast<int32_t>(A) - static_cast<int32_t>(B));
         case ALUOP::SLL_32: {
             const uint32_t value = static_cast<uint32_t>(A);
             const unsigned shamt = static_cast<unsigned>(B & 0x1f);

@@ -28,6 +28,7 @@ std::string conv_reg_str(uint64_t reg) {
 
 std::map<instruction_opcode_e, std::string> map_instr_str_uj_type = {
     {INSTRUCTION_OPCODE_JAL, "jal"},
+    {INSTRUCTION_OPCODE_LUI, "lui"},
     {INSTRUCTION_OPCODE_AUIPC, "auipc"},
 };
 
@@ -41,7 +42,6 @@ std::map<std::pair<instruction_opcode_e, instruction_funct3_e>, std::string> map
     {{INSTRUCTION_OPCODE_BRANCH, INSTRUCTION_FUNCT3_BRANCH_BGE}, "bge"},
     {{INSTRUCTION_OPCODE_BRANCH, INSTRUCTION_FUNCT3_BRANCH_BLTU}, "bltu"},
     {{INSTRUCTION_OPCODE_BRANCH, INSTRUCTION_FUNCT3_BRANCH_BGEU}, "bgeu"},
-    {{INSTRUCTION_OPCODE_LUI, INSTRUCTION_FUNCT3_NONE}, "lui"},
     {{INSTRUCTION_OPCODE_LOAD, INSTRUCTION_FUNCT3_LOAD_LB}, "lb"},
     {{INSTRUCTION_OPCODE_LOAD, INSTRUCTION_FUNCT3_LOAD_LH}, "lh"},
     {{INSTRUCTION_OPCODE_LOAD, INSTRUCTION_FUNCT3_LOAD_LW}, "lw"},
@@ -62,7 +62,6 @@ std::map<std::pair<instruction_opcode_e, instruction_funct3_e>, std::string> map
     {{INSTRUCTION_OPCODE_OP_IMM, INSTRUCTION_FUNCT3_OP_IM_SLTIU}, "sltiu"},
     {{INSTRUCTION_OPCODE_OP_IMM, INSTRUCTION_FUNCT3_OP_IM_XORI}, "xori"},
     {{INSTRUCTION_OPCODE_OP_IMM, INSTRUCTION_FUNCT3_OP_IM_ORI}, "ori"},
-    {{INSTRUCTION_OPCODE_JAL, INSTRUCTION_FUNCT3_NONE}, "jal"},
 
 };
 

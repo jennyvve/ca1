@@ -13,6 +13,9 @@
 #include "memory-control.h"
 #include "mux.h"
 
+const uint8_t N_PIPELINE_STAGES = 5;
+const uint8_t INSTR_SIZE = 4;
+
 typedef enum {
     DATAFORWARD_NONE = 0,
     DATAFORWARD_EX = 1,
@@ -213,6 +216,9 @@ class ExecuteStage : public Stage {
     const ID_EXRegisters &id_ex;
     EX_MRegisters &ex_m;
 
+    void exec_handler_jalr(void);
+    void exec_handler_jal(void);
+    void exec_handler_auipc(void);
     void exec_handler_lui(void);
     void exec_handler_op_imm(void);
     void exec_handler_op_imm_32(void);
@@ -223,6 +229,9 @@ class ExecuteStage : public Stage {
 
     typedef void (ExecuteStage::*exec_handler)(void);
     std::map<instruction_opcode_e, exec_handler> exec_map = {
+        {INSTRUCTION_OPCODE_JALR, &ExecuteStage::exec_handler_jalr},
+        {INSTRUCTION_OPCODE_JAL, &ExecuteStage::exec_handler_jal},
+        {INSTRUCTION_OPCODE_AUIPC, &ExecuteStage::exec_handler_auipc},
         {INSTRUCTION_OPCODE_LUI, &ExecuteStage::exec_handler_lui},
         {INSTRUCTION_OPCODE_OP_IMM_32, &ExecuteStage::exec_handler_op_imm_32},
         {INSTRUCTION_OPCODE_OP_IMM, &ExecuteStage::exec_handler_op_imm},
@@ -257,12 +266,15 @@ class MemoryStage : public Stage {
     const EX_MRegisters &ex_m;
     M_WBRegisters &m_wb;
 
+    void mem_handler_jal(void);
     void mem_handler_branch(void);
     void mem_handler_load(void);
     void mem_handler_store(void);
 
     typedef void (MemoryStage::*mem_handler)(void);
     std::map<instruction_opcode_e, mem_handler> mem_map = {
+        {INSTRUCTION_OPCODE_JALR, &MemoryStage::mem_handler_jal},
+        {INSTRUCTION_OPCODE_JAL, &MemoryStage::mem_handler_jal},
         {INSTRUCTION_OPCODE_BRANCH, &MemoryStage::mem_handler_branch},
         {INSTRUCTION_OPCODE_LOAD, &MemoryStage::mem_handler_load},
         {INSTRUCTION_OPCODE_STORE, &MemoryStage::mem_handler_store},
@@ -292,9 +304,14 @@ class WriteBackStage : public Stage {
 
     typedef void (WriteBackStage::*wb_handler)(void);
     std::map<instruction_opcode_e, wb_handler> wb_map = {
+        {INSTRUCTION_OPCODE_JALR, &WriteBackStage::wb_handler_op},
+        {INSTRUCTION_OPCODE_JAL, &WriteBackStage::wb_handler_op},
+        {INSTRUCTION_OPCODE_AUIPC, &WriteBackStage::wb_handler_op},
         {INSTRUCTION_OPCODE_LUI, &WriteBackStage::wb_handler_op},
-        {INSTRUCTION_OPCODE_OP_IMM, &WriteBackStage::wb_handler_op},
         {INSTRUCTION_OPCODE_OP, &WriteBackStage::wb_handler_op},
+        {INSTRUCTION_OPCODE_OP_IMM, &WriteBackStage::wb_handler_op},
+        {INSTRUCTION_OPCODE_OP_32, &WriteBackStage::wb_handler_op},
+        {INSTRUCTION_OPCODE_OP_IMM_32, &WriteBackStage::wb_handler_op},
         {INSTRUCTION_OPCODE_LOAD, &WriteBackStage::wb_handler_load},
     };
 
