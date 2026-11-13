@@ -9,7 +9,8 @@
 
 #include "../stages.h"
 
-void dump_instruction(std::ostream &os, const uint32_t instr_reg, const InstructionDecoder &decoder);
+void dump_instruction(std::ostream &os, const uint32_t instr_reg,
+                      const InstructionDecoder &decoder);
 
 typedef enum {
     REG_RD_PREV_1 = 0,
@@ -17,11 +18,16 @@ typedef enum {
 } reg_rd_prev_e;
 
 std::map<instruction_opcode_e, dataforward_type_e> opcode_to_type_map = {
-    {INSTRUCTION_OPCODE_JALR, DATAFORWARD_TYPE_EX},   {INSTRUCTION_OPCODE_JAL, DATAFORWARD_TYPE_EX},
-    {INSTRUCTION_OPCODE_AUIPC, DATAFORWARD_TYPE_EX},  {INSTRUCTION_OPCODE_LUI, DATAFORWARD_TYPE_EX},
-    {INSTRUCTION_OPCODE_OP, DATAFORWARD_TYPE_EX},     {INSTRUCTION_OPCODE_OP_IMM, DATAFORWARD_TYPE_EX},
-    {INSTRUCTION_OPCODE_OP_32, DATAFORWARD_TYPE_EX},  {INSTRUCTION_OPCODE_OP_IMM_32, DATAFORWARD_TYPE_EX},
-    {INSTRUCTION_OPCODE_LOAD, DATAFORWARD_TYPE_LOAD}, {INSTRUCTION_OPCODE_STORE, DATAFORWARD_TYPE_EX},
+    {INSTRUCTION_OPCODE_JALR, DATAFORWARD_TYPE_EX},
+    {INSTRUCTION_OPCODE_JAL, DATAFORWARD_TYPE_EX},
+    {INSTRUCTION_OPCODE_AUIPC, DATAFORWARD_TYPE_EX},
+    {INSTRUCTION_OPCODE_LUI, DATAFORWARD_TYPE_EX},
+    {INSTRUCTION_OPCODE_OP, DATAFORWARD_TYPE_EX},
+    {INSTRUCTION_OPCODE_OP_IMM, DATAFORWARD_TYPE_EX},
+    {INSTRUCTION_OPCODE_OP_32, DATAFORWARD_TYPE_EX},
+    {INSTRUCTION_OPCODE_OP_IMM_32, DATAFORWARD_TYPE_EX},
+    {INSTRUCTION_OPCODE_LOAD, DATAFORWARD_TYPE_LOAD},
+    {INSTRUCTION_OPCODE_STORE, DATAFORWARD_TYPE_EX},
     {INSTRUCTION_OPCODE_BRANCH, DATAFORWARD_TYPE_EX},
 };
 
@@ -53,21 +59,26 @@ void InstructionDecodeStage::dataforward_detect() {
     bool df_a_prev_2 = (instr.rs1 && instr.rs1 == prev_instr[REG_RD_PREV_2].rd);
     bool df_b_prev_2 = (instr.rs2 && instr.rs2 == prev_instr[REG_RD_PREV_2].rd);
 
-    if (prev_instr[REG_RD_PREV_1].type == DATAFORWARD_TYPE_LOAD && (df_a_prev_1 || df_b_prev_1)) {
+    if (prev_instr[REG_RD_PREV_1].type == DATAFORWARD_TYPE_LOAD &&
+        (df_a_prev_1 || df_b_prev_1)) {
         insert_nop();
     }
 
     if (df_a_prev_2) {
-        df_a = {.type = prev_instr[REG_RD_PREV_2].type, .pipe = DATAFORWARD_PIPE_MEM};
+        df_a = {.type = prev_instr[REG_RD_PREV_2].type,
+                .pipe = DATAFORWARD_PIPE_MEM};
     }
     if (df_b_prev_2) {
-        df_b = {.type = prev_instr[REG_RD_PREV_2].type, .pipe = DATAFORWARD_PIPE_MEM};
+        df_b = {.type = prev_instr[REG_RD_PREV_2].type,
+                .pipe = DATAFORWARD_PIPE_MEM};
     }
     if (df_a_prev_1) {
-        df_a = {.type = prev_instr[REG_RD_PREV_1].type, .pipe = DATAFORWARD_PIPE_EX};
+        df_a = {.type = prev_instr[REG_RD_PREV_1].type,
+                .pipe = DATAFORWARD_PIPE_EX};
     }
     if (df_b_prev_1) {
-        df_b = {.type = prev_instr[REG_RD_PREV_1].type, .pipe = DATAFORWARD_PIPE_EX};
+        df_b = {.type = prev_instr[REG_RD_PREV_1].type,
+                .pipe = DATAFORWARD_PIPE_EX};
     }
 }
 
@@ -103,8 +114,10 @@ void InstructionDecodeStage::clock_pulse() {
         id_ex.df_a = df_a;
         id_ex.df_b = df_b;
         prev_instr[REG_RD_PREV_2] = prev_instr[REG_RD_PREV_1];
-        prev_instr[REG_RD_PREV_1] = {.rd = instr.rd, .type = opcode_to_type_map[instr.opcode]};
-        if (!pipelining || (pipelining && if_id_int.npc != 0x0) || if_id.ir != TestEndMarker) {
+        prev_instr[REG_RD_PREV_1] = {.rd = instr.rd,
+                                     .type = opcode_to_type_map[instr.opcode]};
+        if (!pipelining || (pipelining && if_id_int.npc != 0x0) ||
+            if_id.ir != TestEndMarker) {
             ++n_instr_issued;
         }
     }

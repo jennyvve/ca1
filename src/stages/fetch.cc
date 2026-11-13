@@ -32,7 +32,8 @@ void InstructionFetchStage::propagate() {
             mux_pc.set_selector(InputSelectorPC::STAY);
         }
 
-        if (instr_reg == TestEndMarker && (!pipelining || instr_distributed <= 0)) {
+        if (instr_reg == TestEndMarker &&
+            (!pipelining || instr_distributed <= 0)) {
             throw TestEndMarkerEncountered(prog_counter);
         }
     } catch (TestEndMarkerEncountered &e) {

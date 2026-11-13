@@ -159,8 +159,12 @@ class TestEndMarkerEncountered : public std::exception {
 
 class InstructionFetchStage : public Stage {
    public:
-    InstructionFetchStage(bool pipelining, IF_IDRegisters &if_id, InstructionMemory instr_mem, MemAddress &prog_counter)
-        : Stage(pipelining), if_id(if_id), instr_mem(instr_mem), prog_counter(prog_counter) {}
+    InstructionFetchStage(bool pipelining, IF_IDRegisters &if_id,
+                          InstructionMemory instr_mem, MemAddress &prog_counter)
+        : Stage(pipelining),
+          if_id(if_id),
+          instr_mem(instr_mem),
+          prog_counter(prog_counter) {}
 
     void propagate() override;
     void clock_pulse() override;
@@ -180,8 +184,10 @@ class InstructionFetchStage : public Stage {
 
 class InstructionDecodeStage : public Stage {
    public:
-    InstructionDecodeStage(bool pipelining, const IF_IDRegisters &if_id, ID_EXRegisters &id_ex, RegisterFile &regfile,
-                           InstructionDecoder &decoder, uint64_t &n_instr_issued, uint64_t &n_stalls,
+    InstructionDecodeStage(bool pipelining, const IF_IDRegisters &if_id,
+                           ID_EXRegisters &id_ex, RegisterFile &regfile,
+                           InstructionDecoder &decoder,
+                           uint64_t &n_instr_issued, uint64_t &n_stalls,
                            bool debug_mode = false)
         : Stage(pipelining),
           if_id(if_id),
@@ -228,7 +234,8 @@ class InstructionDecodeStage : public Stage {
 
 class ExecuteStage : public Stage {
    public:
-    ExecuteStage(bool pipelining, const ID_EXRegisters &id_ex, EX_MRegisters &ex_m)
+    ExecuteStage(bool pipelining, const ID_EXRegisters &id_ex,
+                 EX_MRegisters &ex_m)
         : Stage(pipelining), id_ex(id_ex), ex_m(ex_m) {}
 
     void propagate() override;
@@ -276,7 +283,8 @@ class ExecuteStage : public Stage {
 
 class MemoryStage : public Stage {
    public:
-    MemoryStage(bool pipelining, const EX_MRegisters &ex_m, M_WBRegisters &m_wb, DataMemory data_memory)
+    MemoryStage(bool pipelining, const EX_MRegisters &ex_m, M_WBRegisters &m_wb,
+                DataMemory data_memory)
         : Stage(pipelining), ex_m(ex_m), m_wb(m_wb), data_memory(data_memory) {}
 
     void propagate() override;
@@ -311,8 +319,12 @@ class MemoryStage : public Stage {
 
 class WriteBackStage : public Stage {
    public:
-    WriteBackStage(bool pipelining, const M_WBRegisters &m_wb, RegisterFile &regfile, uint64_t &n_instr_completed)
-        : Stage(pipelining), m_wb(m_wb), regfile(regfile), n_instr_completed(n_instr_completed) {}
+    WriteBackStage(bool pipelining, const M_WBRegisters &m_wb,
+                   RegisterFile &regfile, uint64_t &n_instr_completed)
+        : Stage(pipelining),
+          m_wb(m_wb),
+          regfile(regfile),
+          n_instr_completed(n_instr_completed) {}
 
     void propagate() override;
     void clock_pulse() override;
