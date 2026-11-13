@@ -14,7 +14,7 @@ test_file=$1
 bin_file="${test_file%.test}.bin"
 
 test_data=$(grep -v '\.bin' "$test_file")
-exec_data=$(./rv64-emu $2 "$bin_file" 2>&1)
+exec_data=$(./rv64-emu "$bin_file" 2>&1)
 
 if [[ "$2" == "-p" ]] ; then
     test_data=$(printf '%s\n' "$test_data" | head -n -2)
@@ -24,7 +24,21 @@ fi
 diff --color -u <(printf '%s\n' "$exec_data") <(printf '%s\n' "$test_data")
 
 if [ $? == 0 ] ; then
-    echo "$test_file passed."
+    echo "$test_file sequential passed."
 else
-    echo "$test_file failed."
+    echo "$test_file sequential failed."
+fi
+
+
+test_data=$(grep -v '\.bin' "$test_file")
+exec_data=$(./rv64-emu -p "$bin_file" 2>&1)
+test_data=$(printf '%s\n' "$test_data" | head -n -2)
+exec_data=$(printf '%s\n' "$exec_data" | head -n -3)
+
+diff --color -u <(printf '%s\n' "$exec_data") <(printf '%s\n' "$test_data")
+
+if [ $? == 0 ] ; then
+    echo "$test_file pipelined passed."
+else
+    echo "$test_file pipelined failed."
 fi

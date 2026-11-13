@@ -41,6 +41,9 @@ check: ${TARGET}
 	./scripts/test_application.sh ./test/application/testdata/level2.test
 	./scripts/test_application.sh ./test/application/testdata/level3.test
 	./scripts/test_application.sh ./test/application/testdata/level4.test
+	./scripts/test_application.sh ./test/application/testdata/level5.test
+	./scripts/test_application.sh ./test/application/testdata/level6.test
+	./scripts/test_application.sh ./test/application/testdata/level9.test
 	./scripts/test_instructions.py ./test/instruction/*.conf
 	./scripts/test_instructions.py -p ./test/instruction/*.conf
 

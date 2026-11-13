@@ -102,11 +102,11 @@ void ExecuteStage::exec_handler_mem(void) { alu_output = (RegValue)((int64_t)id_
 void ExecuteStage::propagate() {
     id_ex_int = id_ex;
 
-    if (id_ex_int.df_a != DATAFORWARD_NONE) {
-        id_ex_int.a = dataforward_pipeline[id_ex_int.df_a];
+    if (id_ex_int.df_a.type != DATAFORWARD_TYPE_NONE) {
+        id_ex_int.a = dataforward_pipeline[id_ex_int.df_a.type][id_ex_int.df_a.pipe];
     }
-    if (id_ex_int.df_b != DATAFORWARD_NONE) {
-        id_ex_int.b = dataforward_pipeline[id_ex_int.df_b];
+    if (id_ex_int.df_b.type != DATAFORWARD_TYPE_NONE) {
+        id_ex_int.b = dataforward_pipeline[id_ex_int.df_b.type][id_ex_int.df_b.pipe];
     }
 
     if (exec_map.find(id_ex_int.ir.opcode) != exec_map.end()) {
@@ -116,7 +116,8 @@ void ExecuteStage::propagate() {
 
 void ExecuteStage::clock_pulse() {
     if (mux_flush.get_output() == true) {
-        dataforward_pipeline[DATAFORWARD_MEM] = dataforward_pipeline[DATAFORWARD_EX] = 0;
+        dataforward_pipeline[DATAFORWARD_TYPE_EX][DATAFORWARD_PIPE_MEM] =
+            dataforward_pipeline[DATAFORWARD_TYPE_EX][DATAFORWARD_PIPE_EX] = 0;
         ex_m.flush();
     } else {
         ex_m.npc = id_ex_int.npc;
@@ -126,8 +127,9 @@ void ExecuteStage::clock_pulse() {
         ex_m.imm = id_ex_int.imm;
         ex_m.cond = cond;
         ex_m.alu_output = alu_output;
-        dataforward_pipeline[DATAFORWARD_MEM] = dataforward_pipeline[DATAFORWARD_EX];
-        dataforward_pipeline[DATAFORWARD_EX] = alu_output;
+        dataforward_pipeline[DATAFORWARD_TYPE_EX][DATAFORWARD_PIPE_MEM] =
+            dataforward_pipeline[DATAFORWARD_TYPE_EX][DATAFORWARD_PIPE_EX];
+        dataforward_pipeline[DATAFORWARD_TYPE_EX][DATAFORWARD_PIPE_EX] = alu_output;
     }
     cond = alu_output = 0;
     id_ex_int = {};

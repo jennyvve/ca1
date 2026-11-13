@@ -21,7 +21,7 @@ void MemoryStage::mem_handler_jal(void) {
     mux_pc.set_input(InputSelectorPC::BRANCH, ex_m_int.alu_output);
     mux_pc.set_selector(InputSelectorPC::BRANCH);
     mux_flush.set_selector(InputSelectorFlush::YES);
-    ex_m_int.alu_output = ex_m_int.npc + INSTR_SIZE;
+    lmd = ex_m_int.npc + INSTR_SIZE;
 }
 
 std::map<instruction_funct3_e, bool> map_mem_sign_ext = {
@@ -70,6 +70,8 @@ void MemoryStage::clock_pulse() {
     m_wb.cond = ex_m_int.cond;
     m_wb.alu_output = ex_m_int.alu_output;
     m_wb.lmd = lmd;
+
+    dataforward_pipeline[DATAFORWARD_TYPE_LOAD][DATAFORWARD_PIPE_MEM] = lmd;
 
     lmd = 0;
     ex_m_int = {};

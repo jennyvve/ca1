@@ -152,7 +152,6 @@ typedef enum {
     INSTRUCTION_OPCODE_JALR = 0x67,
     INSTRUCTION_OPCODE_JAL = 0x6F,
     INSTRUCTION_OPCODE_SYSTEM = 0x73,
-
 } instruction_opcode_e;
 
 typedef enum {

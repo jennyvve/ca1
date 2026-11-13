@@ -16,11 +16,33 @@
 const uint8_t N_PIPELINE_STAGES = 5;
 const uint8_t INSTR_SIZE = 4;
 
+enum class InputSelectorPC { INCREMENT, DECREMENT, BRANCH, STAY, LAST };
+enum class InputSelectorFlush { NO, YES, LAST };
+
+inline Mux<RegValue, InputSelectorPC> mux_pc(InputSelectorPC::STAY);
+inline Mux<bool, InputSelectorFlush> mux_flush(InputSelectorFlush::NO);
+inline RegValue dataforward_pipeline[3][2] = {};
+
 typedef enum {
-    DATAFORWARD_NONE = 0,
-    DATAFORWARD_EX = 1,
-    DATAFORWARD_MEM = 2,
-} dataforward_map_e;
+    DATAFORWARD_TYPE_NONE = 0,
+    DATAFORWARD_TYPE_EX = 1,
+    DATAFORWARD_TYPE_LOAD = 2,
+} dataforward_type_e;
+
+typedef enum {
+    DATAFORWARD_PIPE_EX = 0,
+    DATAFORWARD_PIPE_MEM = 1,
+} dataforward_pipeline_e;
+
+typedef struct {
+    dataforward_type_e type;
+    dataforward_pipeline_e pipe;
+} datafoward_t;
+
+typedef struct {
+    uint32_t rd;
+    dataforward_type_e type;
+} prev_instr_t;
 
 static instruction_t instr_nop = {
     .opcode = INSTRUCTION_OPCODE_OP_IMM,
@@ -45,12 +67,12 @@ struct ID_EXRegisters {
     RegValue a;
     RegValue b;
     RegValue imm;
-    dataforward_map_e df_a;
-    dataforward_map_e df_b;
+    datafoward_t df_a;
+    datafoward_t df_b;
 
     void flush() {
         npc = a = b = imm = 0;
-        df_a = df_b = DATAFORWARD_NONE;
+        df_a = df_b = {};
         ir = instr_nop;
     }
 };
@@ -81,14 +103,8 @@ struct M_WBRegisters {
     RegValue lmd;
 
     void flush() {
-        npc = 0;
+        npc = a = b = imm = cond = alu_output = lmd = 0;
         ir = instr_nop;
-        a = 0;
-        b = 0;
-        imm = 0;
-        cond = 0;
-        alu_output = 0;
-        lmd = 0;
     }
 };
 
@@ -180,6 +196,10 @@ class InstructionDecodeStage : public Stage {
     void clock_pulse() override;
 
    private:
+    void dataforward_detect(void);
+    void process_instr(uint32_t instr);
+    void insert_nop(void);
+
     const IF_IDRegisters &if_id;
     ID_EXRegisters &id_ex;
 
@@ -191,13 +211,15 @@ class InstructionDecodeStage : public Stage {
 
     instruction_t instr = {};
     RegValue imm = 0;
-    dataforward_map_e df_a = DATAFORWARD_NONE;
-    dataforward_map_e df_b = DATAFORWARD_NONE;
+    datafoward_t df_a = {};
+    datafoward_t df_b = {};
 
-    uint32_t reg_rd_prev[2] = {};
+    prev_instr_t prev_instr[2] = {};
 
     bool debug_mode;
     IF_IDRegisters if_id_int{};
+    IF_IDRegisters if_id_int_prev{};
+    bool nop_inserted = false;
 };
 
 /*
@@ -246,8 +268,6 @@ class ExecuteStage : public Stage {
     RegValue alu_output = 0;
     RegValue cond = 0;
     ID_EXRegisters id_ex_int{};
-
-    RegValue dataforward_pipeline[3] = {};
 };
 
 /*
@@ -305,7 +325,7 @@ class WriteBackStage : public Stage {
     typedef void (WriteBackStage::*wb_handler)(void);
     std::map<instruction_opcode_e, wb_handler> wb_map = {
         {INSTRUCTION_OPCODE_JALR, &WriteBackStage::wb_handler_op},
-        {INSTRUCTION_OPCODE_JAL, &WriteBackStage::wb_handler_op},
+        {INSTRUCTION_OPCODE_JAL, &WriteBackStage::wb_handler_load},
         {INSTRUCTION_OPCODE_AUIPC, &WriteBackStage::wb_handler_op},
         {INSTRUCTION_OPCODE_LUI, &WriteBackStage::wb_handler_op},
         {INSTRUCTION_OPCODE_OP, &WriteBackStage::wb_handler_op},
@@ -321,11 +341,5 @@ class WriteBackStage : public Stage {
 
     uint64_t &n_instr_completed;
 };
-
-enum class InputSelectorPC { INCREMENT, BRANCH, LAST };
-enum class InputSelectorFlush { NO, YES, LAST };
-
-inline Mux<RegValue, InputSelectorPC> mux_pc(InputSelectorPC::INCREMENT);
-inline Mux<bool, InputSelectorFlush> mux_flush(InputSelectorFlush::NO);
 
 #endif /* __STAGES_H__ */
